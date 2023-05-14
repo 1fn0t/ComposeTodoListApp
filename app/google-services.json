@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "637806051036",
+    "project_id": "composetodos",
+    "storage_bucket": "composetodos.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:637806051036:android:cf393f585261365070be19",
+        "android_client_info": {
+          "package_name": "com.example.composetodolistapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "637806051036-l0f7blvlv2bkhedq7pm1kai2hl0jtpjr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.composetodolistapp",
+            "certificate_hash": "a38aef5b28553774e733795fa77adb9c59e497bb"
+          }
+        },
+        {
+          "client_id": "637806051036-61s8u559gie77ffajrd1a210psqvlgj8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCagK96dL_tS2z7xT5-2JFczV0fWNrDjno"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "637806051036-61s8u559gie77ffajrd1a210psqvlgj8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
