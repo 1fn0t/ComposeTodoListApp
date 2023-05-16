@@ -94,6 +94,8 @@ class MainActivity : ComponentActivity() {
                                     navController = navController,
                                     dbModel = databaseModel,
                                     navModel = navModel,
+                                    firestoreDb = firestoreDb,
+                                    uEmail = auth.currentUser?.email,
                                     modifier = mod
                                 )
                             }
@@ -118,7 +120,7 @@ class MainActivity : ComponentActivity() {
                                 DetailsScreen(todoId = entry.arguments?.getString("todoId"),
                                     colorId = entry.arguments?.getString("colorId"),
                                     action = entry.arguments?.getString("action"),
-                                    firestoreDb = firestoreDb, auth = auth,
+                                    firestoreDb = firestoreDb, uEmail = auth.currentUser?.email,
                                     dbModel = databaseModel, modifier = mod
                                     )
                             }

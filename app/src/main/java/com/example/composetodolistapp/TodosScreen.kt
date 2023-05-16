@@ -1,6 +1,7 @@
 package com.example.composetodolistapp
 
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,12 +24,18 @@ import com.example.composetodolistapp.db.DatabaseViewModel
 import com.example.composetodolistapp.navigation.NavViewModel
 import com.example.composetodolistapp.navigation.Screen
 import com.example.gym.ui.theme.Green300
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+
+private const val TAG = "Todo Screen"
 
 @Composable
 fun TodosScreen(
     navController: NavController,
     dbModel: DatabaseViewModel,
     navModel:NavViewModel,
+    firestoreDb: FirebaseFirestore,
+    uEmail: String?,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -42,6 +49,13 @@ fun TodosScreen(
                 val color = getColorId(index)
                 TodoSection(todo = item, deleteItem = { todo ->
                     dbModel.deleteTodoInDB(todo)
+                    uEmail?.let {
+                        firestoreDb.collection(it).document(todo.id.toString())
+                            .delete()
+                            .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully deleted!") }
+                            .addOnFailureListener { e -> Log.w(TAG, "Error deleting document", e) }
+                    }
+
                 },
                     editItem = { id ->
 //                        navController.navigate(

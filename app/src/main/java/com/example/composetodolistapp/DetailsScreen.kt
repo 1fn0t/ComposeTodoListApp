@@ -1,17 +1,21 @@
 package com.example.composetodolistapp
 
+import android.graphics.Paint
 import android.util.Log
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.FloatingWindow
 import com.example.composetodolistapp.db.DatabaseViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -27,7 +31,7 @@ fun DetailsScreen(
     dbModel: DatabaseViewModel,
     action: String?,
     firestoreDb: FirebaseFirestore,
-    auth: FirebaseAuth,
+    uEmail: String?,
     todoId: String?,
     modifier: Modifier = Modifier
 ) {
@@ -52,28 +56,33 @@ fun DetailsScreen(
 //            backgroundColor = Color.Blue,
             modifier = modifier
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                TextField(value = title.text, onValueChange = { change -> title = TextFieldValue(change) },
-                    singleLine = true, placeholder = { Text(text = "Enter a title", style = MaterialTheme.typography.titleLarge) },
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = colorResource(colorId.toInt()),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    textStyle = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                TextField(value = content.text, onValueChange = { change -> content = TextFieldValue(change) },
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = colorResource(colorId.toInt()),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    textStyle = MaterialTheme.typography.bodyLarge,
+            Box {
+                todo?.let {
+                    Text(text = it.dateCreated.toString(), modifier = Modifier.align(Alignment.BottomEnd))
+                }
+                Column(
                     modifier = Modifier.fillMaxSize()
-                )
+                ) {
+                    TextField(value = title.text, onValueChange = { change -> title = TextFieldValue(change) },
+                        singleLine = true, placeholder = { Text(text = "Enter a title", style = MaterialTheme.typography.titleLarge) },
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = colorResource(colorId.toInt()),
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        textStyle = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    TextField(value = content.text, onValueChange = { change -> content = TextFieldValue(change) },
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = colorResource(colorId.toInt()),
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        textStyle = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
     }
@@ -86,7 +95,7 @@ fun DetailsScreen(
                             title = title.text,
                             content = content.text
                         )
-                        auth.currentUser?.email?.let {
+                        uEmail?.let {
                             firestoreDb.collection(it).document(generatedContents.first.toString())
                                 .set(
                                     hashMapOf(
@@ -112,10 +121,23 @@ fun DetailsScreen(
                                 dateCreated = it.dateCreated
                             )
                         }
-                        updatedTodo?.let {
+                        updatedTodo?.let { result ->
                             dbModel.updateTodoInDB(
-                                it
+                                result
                             )
+                            uEmail?.let {
+                                firestoreDb.collection(it).document(result.id.toString())
+                                    .set(
+                                        hashMapOf(
+                                            "id" to result.id,
+                                            "title" to result.title,
+                                            "content" to result.content,
+                                            "dateCreated" to result.dateCreated
+                                        )
+                                    )
+                                    .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully updated!") }
+                                    .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
+                            }
                         }
                     }
                 }
