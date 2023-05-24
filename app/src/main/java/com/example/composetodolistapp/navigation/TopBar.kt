@@ -19,6 +19,7 @@ fun AppBar(
     backBtnEnabled: Boolean,
     backBtnColor: Color,
     goBackToScreen: () -> Screen,
+    appBarColor: Color,
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
@@ -36,8 +37,8 @@ fun AppBar(
                 )
             }
         },
-        contentColor = Color.Transparent,
-        backgroundColor = Color.Transparent,
+        contentColor = appBarColor,
+        backgroundColor = appBarColor,
         elevation = 0.dp,
         modifier = modifier
     )

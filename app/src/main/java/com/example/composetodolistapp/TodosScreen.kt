@@ -2,11 +2,12 @@ package com.example.composetodolistapp
 
 
 import android.util.Log
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.ui.res.colorResource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -29,6 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 private const val TAG = "Todo Screen"
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TodosScreen(
     navController: NavController,
@@ -42,71 +44,91 @@ fun TodosScreen(
     var todos = dbModel.retrieveTodosFromDB().collectAsState(initial = listOf())
 
     Box {
-        LazyColumn (
-            modifier = modifier.padding(horizontal = 16.dp)
-        ){
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Fixed(count = 2),
+            modifier = modifier.padding(horizontal = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             itemsIndexed(todos.value) { index, item ->
-                val color = getColorId(index)
-                TodoSection(todo = item, deleteItem = { todo ->
-                    dbModel.deleteTodoInDB(todo)
-                    uEmail?.let {
-                        firestoreDb.collection(it).document(todo.id.toString())
-                            .delete()
-                            .addOnSuccessListener { Log.d(TAG, "DocumentSnapshot successfully deleted!") }
-                            .addOnFailureListener { e -> Log.w(TAG, "Error deleting document", e) }
-                    }
+                val colorId = getColorId(index)
+                TodoSection(
+                    todo = item, deleteItem = { todo ->
+                        dbModel.deleteTodoInDB(todo)
+                        uEmail?.let {
+                            firestoreDb.collection(it).document(todo.id.toString())
+                                .delete()
+                                .addOnSuccessListener {
+                                    Log.d(
+                                        TAG,
+                                        "DocumentSnapshot successfully deleted!"
+                                    )
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.w(
+                                        TAG,
+                                        "Error deleting document",
+                                        e
+                                    )
+                                }
+                        }
 
-                },
+                    },
                     editItem = { id ->
-//                        navController.navigate(
-////                        Screen.TodoDetails.withMultOptArgs(
-////                        "todoId" to id.toString(),
-////                        "colorId" to color.toString()
-//                            "details/UPDATE?todoId=$id&colorId=$color"
-//                    )
-//                        )
-                        navController.navigate(Screen.TodoDetails.withOptArgs(
-                            "UPDATE" to null,
-                            null to null,
-                            "todoId" to id.toString(),
-                            "colorId" to color.toString()
-                        ))
+                        navController.navigate(
+                            Screen.TodoDetails.withOptArgs(
+                                "UPDATE" to null,
+                                null to null,
+                                "todoId" to id.toString(),
+                                "colorId" to colorId.toString()
+                            )
+                        )
                         navModel.switchScreen(Screen.TodoDetails)
                     },
-                    color = color
+                    color = colorId
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+
             }
+
             if (todos.value.isEmpty()) {
                 item {
-                    Text(text = "No existing todos", style = MaterialTheme.typography.headlineMedium)
+                    Text(
+                        text = "No existing todos",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
                 }
             }
         }
+        Spacer(modifier = Modifier.height(8.dp))
 
-        FloatingActionButton(onClick = {
-            navController.navigate(Screen.TodoDetails.withOptArgs(
-                "ADD" to null,
-                null to null,
-                "colorId" to getColorId(todos.value.size).toString(),
-            ))
+        FloatingActionButton(
+            onClick = {
+                val colorId = getColorId(todos.value.size)
+                navController.navigate(
+                    Screen.TodoDetails.withOptArgs(
+                        "ADD" to null,
+                        null to null,
+                        "colorId" to colorId.toString(),
+                    )
+                )
 //            navController.navigate("details/ADD?colorId=${getColorId(todos.value.size)}")
-            navModel.switchScreen(Screen.TodoDetails)
-        },
+                navModel.switchScreen(Screen.TodoDetails)
+            },
             containerColor = Green300,
             modifier = Modifier
                 .size(128.dp)
                 .padding(32.dp)
                 .align(Alignment.BottomEnd)
         ) {
-            Icon(painter = painterResource(R.drawable.baseline_add_24), contentDescription = null,
+            Icon(
+                painter = painterResource(R.drawable.baseline_add_24), contentDescription = null,
                 tint = Color.White, modifier = Modifier.size(56.dp)
             )
         }
     }
-
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodoSection(
     todo: Todo,
@@ -115,36 +137,44 @@ fun TodoSection(
     color: Int,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .clickable {
-                editItem(todo.id)
-            }
-            .background(colorResource(color))
-            .padding(top = 8.dp, bottom = 8.dp, start = 8.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
+    Card(onClick = { editItem(todo.id) }, modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = colorResource(color))
         ) {
-            Text(
-                text = todo.title,
+        Column (
+            modifier = modifier.padding(8.dp)
+                ){
+            Row(
+                verticalAlignment = Alignment.Top,
                 modifier = Modifier
-                    .weight(1f)
-            )
-            IconButton(
-                onClick = {
-                          deleteItem(todo)
-                },
-                modifier = Modifier.weight(0.1f)
             ) {
-                Icon(
-                    Icons.Filled.Close, contentDescription = "Delete item"
-                )
+                if (todo.title.isNotEmpty()) {
+                    Text(
+                        text = todo.title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier
+                            .weight(1f)
+                    )
+                    DeleteButton(deleteItem = { item -> deleteItem(item) }, todo = todo,
+                        modifier = Modifier.weight(0.1f))
+                }
+
+            }
+            if (todo.content.isNotEmpty()) {
+                Row (
+                    verticalAlignment = Alignment.Top,
+                ){
+                    Text(text = todo.content, maxLines = 8, style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (todo.title.isEmpty()) {
+                        DeleteButton(deleteItem = { item -> deleteItem(item) }, todo = todo, modifier = Modifier.weight(0.1f))
+                    }
+                }
+
             }
         }
-        Text(text = todo.content, maxLines = 3)
     }
+
 }
 
 fun getColorId(index: Int): Int {
@@ -158,6 +188,24 @@ fun getColorId(index: Int): Int {
         return R.color.light_blue
     }
     return R.color.light_yellow
+}
+
+@Composable
+fun DeleteButton(
+    deleteItem: (Todo) -> Unit,
+    todo: Todo,
+    modifier: Modifier = Modifier
+) {
+    IconButton(
+        onClick = {
+            deleteItem(todo)
+        },
+        modifier = modifier
+    ) {
+        Icon(
+            Icons.Filled.Close, contentDescription = "Delete item"
+        )
+    }
 }
 
 @Preview(showBackground = true)

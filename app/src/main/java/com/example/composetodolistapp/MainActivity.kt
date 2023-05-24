@@ -1,29 +1,12 @@
 package com.example.composetodolistapp
 
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -81,6 +64,7 @@ class MainActivity : ComponentActivity() {
                         AppBar(
                             backBtnEnabled = navModel.backButtonEnabled,
                             backBtnColor = navModel.backButtonColor,
+                            appBarColor = navModel.appBarColor,
                             goBackToScreen = { navModel.switchBackToScreen() },
                             navController = navController
                         )
@@ -121,7 +105,8 @@ class MainActivity : ComponentActivity() {
                                     colorId = entry.arguments?.getString("colorId"),
                                     action = entry.arguments?.getString("action"),
                                     firestoreDb = firestoreDb, uEmail = auth.currentUser?.email,
-                                    dbModel = databaseModel, modifier = mod
+                                    dbModel = databaseModel, changeBarColor = { color -> navModel.changeAppBarColor(color)},
+                                    modifier = mod
                                     )
                             }
                         }
